@@ -9,7 +9,7 @@
 #then call makefactions for the four roles that you want to assign in the server (or use the default ones if your like)
 #All set, questions are permanent unless the creator (Sean Kim) changes them
 
-from discord import Game
+from discord import Game #fun import to add for sorting hat bot
 from discord.ext.commands import Bot
 from discord.utils import get
 
