@@ -6,7 +6,9 @@
 #Token: NDMxMzMxMTI5OTg4MjE4ODkw.DadMNw.nn4Kd-xMnaoqNGp0wycleLlClGM
 
 from discord import Game
+from discord.ext import commands
 from discord.ext.commands import Bot
+from discord.utils import get
 
 #Sorting Hat's token to run
 token = 'NDMxMzMxMTI5OTg4MjE4ODkw.DadMNw.nn4Kd-xMnaoqNGp0wycleLlClGM'
@@ -57,6 +59,16 @@ a)Dog b)Cat c)Bird d)Lizard e)Other \n\n"
 a)Chocolate b)Vanilla c)Rocky Road d)Cookies and Cream e)Other \n\n"
 
     await hat.say(quiz) #shows form to the server
+
+@hat.command(pass_context = True)
+async def addrole(context):
+    '''
+    this function gives the member a new role.
+    '''
+    member = context.message.author
+    role = get(member.server.roles, name = "Hooman")
+    print(role)
+    await hat.add_roles(member, role)
 
 def check_answer(check:str):
     '''
@@ -141,10 +153,5 @@ async def takequiz(context, q1='x', q2='x', q3='x', q4='x'):
     await hat.say('Through your answers you have been \
 placed into the {} faction!'.format(alignment))
 
-@hat.command(pass_context = True)
-async def x(context):
-    context.message.server.role
-    hat.remove_roles(context.message.author, role)
-    await hat.say("Done! Role Removed")
 
 hat.run(token)
