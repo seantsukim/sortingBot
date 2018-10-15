@@ -5,8 +5,11 @@
 #Sorting Hat#4538
 #Token: NDMxMzMxMTI5OTg4MjE4ODkw.DadMNw.nn4Kd-xMnaoqNGp0wycleLlClGM
 
+#To set up the bot, there needs to be an Admin role in the server (faction maker).
+#then call makefactions for the four roles that you want to assign in the server (or use the default ones if your like)
+#All set, questions are permanent unless the creator (Sean Kim) changes them
+
 from discord import Game
-from discord.ext import commands
 from discord.ext.commands import Bot
 from discord.utils import get
 
@@ -15,6 +18,11 @@ token = 'NDMxMzMxMTI5OTg4MjE4ODkw.DadMNw.nn4Kd-xMnaoqNGp0wycleLlClGM'
 
 #The way for users to call on the bot's functions
 hat = Bot(command_prefix = '!')
+
+faction_name1 = 'Holy'
+faction_name2 = 'Vigilant'
+faction_name3 = 'Hunter'
+faction_name4 = 'Destroyer'
 
 @hat.event
 async def on_ready():
@@ -25,6 +33,26 @@ async def on_ready():
     print("Bot Logging In!")
     print("Bot ID: " + hat.user.id)
     print(hat.user.name + " is ready!")
+
+@hat.command(pass_context = True)
+async def makefactions(context, role1: str, role2:str, role3:str, role4:str):
+    '''
+    a discord command that allows admin to change to roles the bot assigns.
+    only needs to be called once, incase this bot is in a foreign server where roles
+    are not the same as the global variables.
+    '''
+    #if someone who isn't admin is trying to use command
+    if not(is_admin(context)):
+        await hat.say("I'm afraid I cannot let you do that.")
+        return
+    else:
+        faction_name1 = role1
+        faction_name2 = role2
+        faction_name3 = role3
+        faction_name4 = role4
+        await hat.say("Done! New factions are (in order): {}, {}, {}, and {}.".format(
+            role1, role2, role3, role4))
+        
     
 @hat.command(name = 'showquiz',
              aliases = ['ShowQuiz', 'SHOWQUIZ', 'ShowForm'],
@@ -59,16 +87,6 @@ a)Dog b)Cat c)Bird d)Lizard e)Other \n\n"
 a)Chocolate b)Vanilla c)Rocky Road d)Cookies and Cream e)Other \n\n"
 
     await hat.say(quiz) #shows form to the server
-
-@hat.command(pass_context = True)
-async def addrole(context):
-    '''
-    this function gives the member a new role.
-    '''
-    member = context.message.author
-    role = get(member.server.roles, name = "Hooman")
-    print(role)
-    await hat.add_roles(member, role)
 
 def check_answer(check:str):
     '''
@@ -128,17 +146,14 @@ async def takequiz(context, q1='x', q2='x', q3='x', q4='x'):
     Put your answers a-e for all the questions after !takequiz to get your results.
     Answers are not case-sensitive.
     '''
-    #await hat.say("Number of Roles: "+str(len(context.message.author.roles))+'\n')
-    #await hat.say(str(context.message.author.roles))
-    '''
     #If the member is already aligned to a faction/role
-    if len(context.message.author.roles) != 1:
-        await hat.say("I'm sorry you were already admitted into a faction")
+    if (len(context.message.author.roles) != 1) and (not(is_admin(context))):
+        await hat.say("I'm sorry you were already admitted into a faction.")
         return
 
     #If the member forgets an answer when submitting their answers
     if (q1 == 'x' or q2 == 'x' or q3 == 'x' or q4 == 'x'):
-        await hat.say("I'm sorry, you seemed to have forgotten an answer")
+        await hat.say("I'm sorry, you seemed to have forgotten an answer.")
         return
     
     #If the member tries to add an answer other than a, b, c, d, or e
@@ -146,12 +161,32 @@ async def takequiz(context, q1='x', q2='x', q3='x', q4='x'):
            check_answer(q3.lower()) and check_answer(q4.lower())):
         await hat.say("I'm sorry, one of your answers isn't appropriate for the quiz.")
         return
-    '''    
+
+    #calculates faction score and processes member's alignment
     align_score = faction_score(q1, q2, q3, q4)
     alignment = det_faction(align_score)
-    
-    await hat.say('Through your answers you have been \
-placed into the {} faction!'.format(alignment))
 
+    member = context.message.author
+
+    #based on score, determines server faction
+    if alignment == 'A':
+        role = get(member.server.roles, name = faction_name1)
+    elif alignment == 'B':
+        role = get(member.server.roles, name = faction_name2)
+    elif alignment == 'C':
+        role = get(member.server.roles, name = faction_name3)
+    elif alignment == 'D':
+        role = get(member.server.roles, name = faction_name4)
+    else:
+        print("uh-oh, that shouldn't have happened")
+    
+    await hat.say('Through your answers you have been placed into the {} faction!'.format(role))
+    await hat.add_roles(member, role)
+
+def is_admin(context):
+    '''
+    checks the context to see if the individual is an admin
+    '''
+    return "admin" in [role.name.lower() for role in context.message.author.roles]
 
 hat.run(token)
